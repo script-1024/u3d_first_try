@@ -1,0 +1,38 @@
+{
+	"meta": {
+		"format_version": "3.6",
+		"creation_time": 1638963736,
+		"model_format": "free",
+		"box_uv": false
+	},
+	"name": "ground",
+	"geometry_name": "model.ground.flat",
+	"visible_box": [1, 1, 0],
+	"resolution": {
+		"width": 16,
+		"height": 16
+	},
+	"elements": [
+		{
+			"name": "cube",
+			"rescale": false,
+			"from": [-8, 0, -8],
+			"to": [8, 2, 8],
+			"autouv": 1,
+			"color": 7,
+			"locked": false,
+			"origin": [0, 0, 0],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 2]},
+				"east": {"uv": [0, 0, 16, 2]},
+				"south": {"uv": [0, 0, 16, 2]},
+				"west": {"uv": [0, 0, 16, 2]},
+				"up": {"uv": [0, 0, 16, 16]},
+				"down": {"uv": [0, 0, 16, 16]}
+			},
+			"uuid": "6bfa636e-267c-01c3-f3c8-22f8be9dadc9"
+		}
+	],
+	"outliner": ["6bfa636e-267c-01c3-f3c8-22f8be9dadc9"],
+	"textures": []
+}
