@@ -10,35 +10,33 @@ public class FallOut : MonoBehaviour
     public Transform target;
 
     void Start() { }
-
-    void Update()
+/*
+    float distToGround = 0.0f;
+    Vector3 dwn = transform.TransformDirection(Vector3.down);
+    bool OnGround()
     {
-        isFallOut();
+        return Physics.Raycast(transform.position, dwn, 0.1f);
     }
 
-    void isFallOut()
+    void Update() { Debug.Log(OnGround()); }
+*/
+    void LateUpdate()
     {
-        string str = ""+target;
-        str = str.Replace(" (UnityEngine.Transform)","");
-
-        if ( (times > 2 && transform.position.y <= -5) || target.position.x > 1e+9 || target.position.y > 30 || target.position.z > 1e+9)
+        if ( (times > 2 && transform.position.y <= -5) || transform.position.y >= 30)
         {
-            Debug.Log("實體 \"" + str + "\" 位於無效位置，已經重置。坐標: " + target.position);
-            target.position = new Vector3(0.0f, 2.0f, -8.0f);
-            CarMove.resetSpeed = true;
+            Debug.Log("實體 \"" + this.gameObject.name + "\" 位於無效位置，已經重置。坐標: " + target.position);
+            target.position = new Vector3(0, 2, -8);
+            target.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+            CarMove.Speed = 0.0f;
             times = 0;
         }
         else if (times <= 2 && transform.position.y <= -5 )
         {
-            Debug.Log("實體 \"" + str + "\" 掉入虛空。坐標: " + target.position);
-            target.position = new Vector3(0.0f, 2.0f, target.position.z);
+            Debug.Log("實體 \"" + this.gameObject.name + "\" 掉入虛空。坐標: " + target.position);
+            target.position = new Vector3(0, 2, target.position.z);
+            target.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
             times += 1;
             sec = Time.time;
-        }
-
-        if (target.position.y >= 0.21)
-        {
-            target.Rotate(0 - target.eulerAngles.x, 0, 0);
         }
 
         secLatest = Time.time;
