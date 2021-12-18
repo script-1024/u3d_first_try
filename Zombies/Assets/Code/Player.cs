@@ -7,7 +7,7 @@ public class Player : MonoBehaviour
 {
     public Transform ThisPlayer;
     public Transform Model;
-    public Transform Camera;
+    public Transform Lower;
     public Transform Head;
     public Transform Body;
     public Transform LeftArm;
@@ -33,45 +33,30 @@ public class Player : MonoBehaviour
         CameraFollow();
     }
 
-    void RotateRect()
-    {
-        
-    }
-
     void PlayerController()
     {
         if (Input.GetKey("mouse 2")) {Speed = 5.6f;}
         else {Speed = 4.2f;}
         
-        if (Input.GetKey("w"))
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        if (Input.GetKey("a") && Input.GetKey("d") || Input.GetKey("left") && Input.GetKey("right")) { h=0; }
+        if (Input.GetKey("w") && Input.GetKey("s") || Input.GetKey("up") && Input.GetKey("down")) { v=0; }
+        if (h!=0 || v!=0)
         {
-            RotateRect();
-            Model.transform.Translate(0, 0, Speed * Time.deltaTime);
+            Vector3 direction = new Vector3(h, 0, v);
+            float y = Head.transform.rotation.eulerAngles.y;
+            direction = Quaternion.Euler(0, y, 0) * direction;
+            Model.transform.Translate(-direction * Time.deltaTime * Speed);
         }
-        if (Input.GetKey("s"))
-        {
-            RotateRect();
-            Model.transform.Translate(0, 0, -Speed * Time.deltaTime);
-        }
-        if (Input.GetKey("d"))
-        {
-            RotateRect();
-            Model.transform.Translate(Speed * Time.deltaTime, 0, 0);
-        }
-        if (Input.GetKey("a"))
-        {
-            RotateRect();
-            Model.transform.Translate(-Speed * Time.deltaTime, 0, 0);
-        }
-        Camera.transform.position = new Vector3(Pos.x, Pos.y + 1.75f, Pos.z);
     }
 
-    float _mouseX = 0f;
-    float _mouseY = 0f;
-    float _rotationOnX = 0f;
-    float _rotationOnY = 0f;
-    float _cameraSpeed = 100f;
-    bool _curLock = false;
+    float mouseX = 0f;
+    float mouseY = 0f;
+    float rotationOnX = 0f;
+    float rotationOnY = 0f;
+    float cameraSpeed = 100f;
+    bool curLock = false;
 
     void CameraFollow()
     {
@@ -79,16 +64,16 @@ public class Player : MonoBehaviour
         
         if (Input.GetKey("left alt"))
         {
-            _curLock = false;
+            curLock = false;
         }
         else if (Input.GetKeyUp("escape"))
         {
             Game.Pause = !Game.Pause;
-            _curLock = false;
+            curLock = false;
         }
-        else if (!Input.GetKey("left alt") && !Game.Pause) { _curLock = true; }
+        else if (!Input.GetKey("left alt") && !Game.Pause) { curLock = true; }
 
-        if (_curLock)
+        if (curLock)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -99,33 +84,18 @@ public class Player : MonoBehaviour
             Cursor.visible = true;
         }
         
-        if (_curLock)
+        if (curLock)
         {
-            _mouseX = Input.GetAxis("Mouse X") * Time.deltaTime * _cameraSpeed * 6;
-            _mouseY = Input.GetAxis("Mouse Y") * Time.deltaTime * _cameraSpeed * 6;
+            mouseX = Input.GetAxis("Mouse X") * Time.deltaTime * cameraSpeed * 6;
+            mouseY = Input.GetAxis("Mouse Y") * Time.deltaTime * cameraSpeed * 6;
 
-            _rotationOnX -= _mouseY;
-            _rotationOnX = Mathf.Clamp(_rotationOnX, -90, 90);
+            rotationOnX -= mouseY;
+            rotationOnX = Mathf.Clamp(rotationOnX, -90, 90);
 
-            _rotationOnY += _mouseX;
-            if (_rotationOnY < -45)
-            {
-                _rotationOnY = -45;
-                Model.transform.Rotate(0, -2, 0);
-                Camera.transform.Rotate(0, -2, 0);
-                
-            }
-            else if (_rotationOnY > 45)
-            {
-                _rotationOnY = 45;
-                Model.transform.Rotate(0, 2, 0);
-                Camera.transform.Rotate(0, 2, 0);
-                
-            }
+            rotationOnY += mouseX;
             
-            Camera.transform.localRotation = Quaternion.Euler(_rotationOnX, _rotationOnY, 0f);
-            
-            Head.transform.localRotation = Quaternion.Euler(-_rotationOnX, _rotationOnY, 0f);
+            Head.transform.localRotation = Quaternion.Euler(-rotationOnX, rotationOnY, 0f);
+            Lower.transform.rotation = Quaternion.Euler(0, Head.transform.rotation.eulerAngles.y, 0);
         }
     }
 }
