@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     public Transform LeftLeg;
     public Transform RightLeg;
 
-    public static float Speed = 0f;
+    public static float Velocity = 0f;
     public static float Health = 20f;
     public static float Armor = 0f;
     public static Vector3 Pos;
@@ -26,17 +26,19 @@ public class Player : MonoBehaviour
         ThisPlayer = GetComponentInParent<Transform>().parent.transform;
     }
 
+    float sight;
     void Update()
     {
         Pos = Model.transform.position;
         PlayerController();
         CameraFollow();
+        sight = AngleConvert( Head.transform.localRotation.eulerAngles.y - Lower.transform.localRotation.eulerAngles.y );
     }
-
+    
     void PlayerController()
     {
-        if (Input.GetKey("mouse 2")) {Speed = 5.6f;}
-        else {Speed = 4.2f;}
+        if (Input.GetKey("mouse 2")) {Velocity = 5.6f;}
+        else {Velocity = 4.2f;}
         
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -47,7 +49,19 @@ public class Player : MonoBehaviour
             Vector3 direction = new Vector3(h, 0, v);
             float y = Head.transform.rotation.eulerAngles.y;
             direction = Quaternion.Euler(0, y, 0) * direction;
-            Model.transform.Translate(-direction * Time.deltaTime * Speed);
+            Model.transform.Translate(-direction * Time.deltaTime * Velocity);
+            if (Input.GetKey("w") || Input.GetKey("s"))
+            {
+                Lower.transform.rotation = Quaternion.Euler(0, Head.transform.rotation.eulerAngles.y, 0);
+            }
+            if (Input.GetKey("a")) Lower.transform.rotation = Quaternion.Euler(0,Head.transform.localRotation.eulerAngles.y+135,0);
+            if (Input.GetKey("d")) Lower.transform.rotation = Quaternion.Euler(0,Head.transform.localRotation.eulerAngles.y-135,0);
+            Action("walk");
+        }
+
+        if (!Input.anyKey)
+        {
+            Action("idle");
         }
     }
 
@@ -60,8 +74,6 @@ public class Player : MonoBehaviour
 
     void CameraFollow()
     {
-        
-        
         if (Input.GetKey("left alt"))
         {
             curLock = false;
@@ -93,9 +105,118 @@ public class Player : MonoBehaviour
             rotationOnX = Mathf.Clamp(rotationOnX, -90, 90);
 
             rotationOnY += mouseX;
+            Head.transform.localRotation = Quaternion.Euler(-rotationOnX, rotationOnY, 0);
             
-            Head.transform.localRotation = Quaternion.Euler(-rotationOnX, rotationOnY, 0f);
-            Lower.transform.rotation = Quaternion.Euler(0, Head.transform.rotation.eulerAngles.y, 0);
+            if (sight < -45)
+            {
+                Lower.transform.Rotate(0,-6,0);
+            }
+            else if (sight > 45)
+            {
+                Lower.transform.Rotate(0,6,0);
+            }
+        }
+    }
+
+    float AngleConvert(float _source)
+    {
+        //將角度限制在 -180 ~ 180 之間
+        if (_source>180) _source -= 360;
+        if (_source<-180) _source += 360;
+        return _source;
+    }
+
+    float arm = 0.0f;
+    float crrntArm;
+    string armState = "";
+
+    float leg = 0.0f;
+    float crrntLeg;
+    string legState = "";
+
+    float rate = 0.0f;
+    void Action(string _id)
+    {
+        crrntArm = AngleConvert(LeftArm.transform.rotation.eulerAngles.x);
+        crrntLeg = AngleConvert(LeftLeg.transform.localRotation.eulerAngles.x);
+
+        switch (_id)
+        {
+            case "idle":
+                rate = 0.02f;
+                arm = 5.0f;
+                leg = 0.0f;
+                break;
+            
+            case "walk":
+                rate = 0.8f;
+                arm = 45.0f;
+                leg = 45.0f;
+                break;
+
+            default:
+                rate = 0.0f;
+                arm = 0.0f;
+                leg = 0.0f;
+                break;
+        }
+
+        if (armState == "")
+        {
+            armState = "upward";
+            LeftArm.transform.localRotation = Quaternion.Euler(new Vector3(0,0,0));
+            RightArm.transform.localRotation = Quaternion.Euler(new Vector3(0,0,0));
+        }
+        else if (crrntArm < arm && armState == "upward")
+        {
+            LeftArm.transform.Rotate(rate, 0, 0);
+            RightArm.transform.Rotate(-rate, 0, 0);
+        }
+        else if (crrntArm <= -arm && armState == "down")
+        {
+            armState = "upward";
+            LeftArm.transform.Rotate(rate, 0, 0);                
+            RightArm.transform.Rotate(-rate, 0, 0);
+        }
+        else if (armState == "down" )
+        {
+            LeftArm.transform.Rotate(-rate, 0, 0);
+            RightArm.transform.Rotate(rate, 0, 0);
+        }
+        else if (crrntArm >= arm && armState == "upward")
+        {
+            armState = "down";
+            LeftArm.transform.Rotate(-rate, 0, 0);
+            RightArm.transform.Rotate(rate, 0, 0);
+        }
+
+        if (legState == "")
+        {
+            legState = "upward";
+            LeftLeg.transform.localRotation = Quaternion.Euler(new Vector3(0,0,0));
+            RightLeg.transform.localRotation = Quaternion.Euler(new Vector3(0,0,0));
+        }
+        else if (crrntLeg < leg && legState == "upward")
+        {
+            LeftLeg.transform.Rotate(rate, 0, 0);
+            RightLeg.transform.Rotate(-rate, 0, 0);
+        }
+        else if (crrntLeg <= -leg && legState == "down")
+        {
+            legState = "upward";
+            LeftLeg.transform.Rotate(rate, 0, 0);                
+            RightLeg.transform.Rotate(-rate, 0, 0);
+        }
+        else if (legState == "down" )
+        {
+            LeftLeg.transform.Rotate(-rate, 0, 0);
+            RightLeg.transform.Rotate(rate, 0, 0);
+        }
+        else if (crrntLeg >= leg && legState == "upward")
+        {
+            legState = "down";
+            LeftLeg.transform.Rotate(-rate, 0, 0);
+            RightLeg.transform.Rotate(rate, 0, 0);
         }
     }
 }
