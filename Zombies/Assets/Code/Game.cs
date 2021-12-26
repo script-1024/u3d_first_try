@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class Game : MonoBehaviour
 {
-    public static bool Pause = false;
+    public bool Pause { get; set; }
     
-    void Start()
+    public Game()
     {
         
+    }
+
+    void Start()
+    {
+        Pause = false;
     }
 
     void Update()

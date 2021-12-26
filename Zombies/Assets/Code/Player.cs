@@ -5,6 +5,13 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public Vector3 Pos { get; set; }
+    public bool OnGround { get; set; }
+    public float Speed { get; set; }
+    public float Health { get; set; }
+    public float Armor { get; set; }
+    public bool Pause { get; set; }
+
     public Transform ThisPlayer;
     public Transform Model;
     public Transform Lower;
@@ -15,21 +22,25 @@ public class Player : MonoBehaviour
     public Transform LeftLeg;
     public Transform RightLeg;
 
-    public static float Velocity = 0f;
-    public static float Health = 20f;
-    public static float Armor = 0f;
-    public static Vector3 Pos;
-    public static bool Pause = false;
+    public Player(Vector3 pos, float health, float armor)
+    {
+        this.Pos = pos;
+        this.Health = health;
+        this.Armor = armor;
+    }
 
     void Start()
     {
         ThisPlayer = GetComponentInParent<Transform>().parent.transform;
+        Health = 20.0f;
+        Armor = 0.0f;
     }
 
     float sight;
+    int groundCheck = 0;
     void Update()
     {
-        Pos = Model.transform.position;
+        Pos = ThisPlayer.transform.position;
         PlayerController();
         CameraFollow();
         sight = AngleConvert( Head.transform.localRotation.eulerAngles.y - Lower.transform.localRotation.eulerAngles.y );
@@ -37,8 +48,8 @@ public class Player : MonoBehaviour
     
     void PlayerController()
     {
-        if (Input.GetKey("mouse 2")) {Velocity = 5.6f;}
-        else {Velocity = 4.2f;}
+        if (Input.GetKey("mouse 2") || Input.GetKey("left shift")) {Speed = 7.0f;}
+        else {Speed = 4.0f;}
         
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -49,7 +60,7 @@ public class Player : MonoBehaviour
             Vector3 direction = new Vector3(h, 0, v);
             float y = Head.transform.rotation.eulerAngles.y;
             direction = Quaternion.Euler(0, y, 0) * direction;
-            Model.transform.Translate(-direction * Time.deltaTime * Velocity);
+            ThisPlayer.transform.Translate(-direction * Time.deltaTime * Speed);
             if (Input.GetKey("w") || Input.GetKey("s"))
             {
                 Lower.transform.rotation = Quaternion.Euler(0, Head.transform.rotation.eulerAngles.y, 0);
@@ -57,6 +68,11 @@ public class Player : MonoBehaviour
             if (Input.GetKey("a")) Lower.transform.rotation = Quaternion.Euler(0,Head.transform.localRotation.eulerAngles.y+135,0);
             if (Input.GetKey("d")) Lower.transform.rotation = Quaternion.Euler(0,Head.transform.localRotation.eulerAngles.y-135,0);
             Action("walk");
+        }
+
+        if (Input.GetKeyUp("space"))
+        {
+            ThisPlayer.transform.position = new Vector3(ThisPlayer.transform.position.x, ThisPlayer.transform.position.y + 1.2f, ThisPlayer.transform.position.z);
         }
 
         if (!Input.anyKey)
@@ -218,5 +234,10 @@ public class Player : MonoBehaviour
             LeftLeg.transform.Rotate(-rate, 0, 0);
             RightLeg.transform.Rotate(rate, 0, 0);
         }
+    }
+
+    void FallOut()
+    {
+
     }
 }
